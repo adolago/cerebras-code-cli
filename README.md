@@ -21,6 +21,7 @@ This project is maintained by:
 ### **Pillar 1: Idea Stack (Infrastructure & Architecture)**
 *Focus: Architecture, infrastructure, CI/CD, provider systems*
 
+- **9ffb274ca** - Update commit hash in README (final hash after amendment)
 - **f985bf604** - Move pillars to top of README and add update enforcement rule (pre-push hook + guideline doc)
 - **b72735c6f** - Cerebras-only provider architecture (removed 1,263 lines of multi-provider abstraction)
 - **b7e33ea65** - Package rename for Cerebras branding
