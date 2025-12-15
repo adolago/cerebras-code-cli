@@ -25,4 +25,21 @@ if [ "$CURRENT_VERSION" != "$EXPECTED_VERSION" ]; then
   echo "Error: Bun version $CURRENT_VERSION does not match expected version $EXPECTED_VERSION from package.json"
   exit 1
 fi
+
+# Check if README.md was updated in this push
+if git diff --name-only origin/$(git branch --show-current)..HEAD | grep -q "README.md"; then
+  echo "✓ README.md updated - good job!"
+else
+  echo ""
+  echo "⚠️  WARNING: README.md was not updated!"
+  echo "Please add your commit to the appropriate pillar section in README.md"
+  echo "See .github/README_UPDATE_RULE.md for guidelines"
+  echo ""
+  read -p "Continue anyway? (y/N) " -n 1 -r
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    exit 1
+  fi
+fi
+
 bun typecheck

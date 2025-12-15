@@ -14,6 +14,42 @@ This project is maintained by:
 
 ---
 
+## Commits Categorized by Strategic Pillars
+
+> **⚠️ IMPORTANT:** When making new commits, update this section with your changes under the appropriate pillar.
+
+### **Pillar 1: Idea Stack (Infrastructure & Architecture)**
+*Focus: Architecture, infrastructure, CI/CD, provider systems*
+
+- **a22342f9c** - Move pillars to top of README and add update enforcement rule (pre-push hook + guideline doc)
+- **b72735c6f** - Cerebras-only provider architecture (removed 1,263 lines of multi-provider abstraction)
+- **b7e33ea65** - Package rename for Cerebras branding
+- **0c19e077e** - Package version update
+- **d68f3099c** - Husky pre-push hook setup (13 insertions)
+- **1ba691f3f** - Pre-push hook enhancement (6 insertions)
+- **64f74e988** - TypeScript configuration updates (type shims and tsconfig)
+
+### **Pillar 2: TUI Features (User Interface & Experience)**
+*Focus: UI/UX improvements, metrics display, user interactions*
+
+- **bde924a60** - Request usage information display (replaced pricing with metrics in header/sidebar)
+- **b72735c6f** - UI simplification (removed provider dialogs, streamlined session/context UX)
+
+### **Pillar 3: SDK Level Features (Core Functionality & API)**
+*Focus: Core functionality, authentication, retry logic, SDK capabilities*
+
+- **42ce88a03** - Exponential backoff fix (improved retry logic)
+- **d76d0fca4** - Backoff timeout configuration (60-second max)
+- **b72735c6f** - PKCE authentication implementation (OAuth 2.0 with 139-line login module)
+- **0e60f6660** - Complete Python SDK (229 files, 22,322 insertions, co-authored with Aiden Cline)
+
+### **Pillar 4: Experiment and Reporting (Metrics & Analytics)**
+*Focus: Metrics, logging, experimentation tracking, analytics*
+
+- **bde924a60** - Metrics display implementation (request usage tracking, foundation for future analytics)
+
+---
+
 ## Detailed Work Completed Before December 15, 2025
 
 ### **December 9, 2025**
@@ -262,39 +298,6 @@ This project is maintained by:
 6. **UI/UX Improvements:** Better usage tracking and information display
 7. **Code Quality:** Automated pre-push validation
 8. **Documentation:** Comprehensive Python SDK documentation
-
----
-
-## Commits Categorized by Strategic Pillars
-
-### **Pillar 1: Idea Stack (Infrastructure & Architecture)**
-*6 commits focused on architecture, infrastructure, and CI/CD*
-
-- **b72735c6f** - Cerebras-only provider architecture (removed 1,263 lines of multi-provider abstraction)
-- **b7e33ea65** - Package rename for Cerebras branding
-- **0c19e077e** - Package version update
-- **d68f3099c** - Husky pre-push hook setup (13 insertions)
-- **1ba691f3f** - Pre-push hook enhancement (6 insertions)
-- **64f74e988** - TypeScript configuration updates (type shims and tsconfig)
-
-### **Pillar 2: TUI Features (User Interface & Experience)**
-*2 commits improving UI/UX and metrics display*
-
-- **bde924a60** - Request usage information display (replaced pricing with metrics in header/sidebar)
-- **b72735c6f** - UI simplification (removed provider dialogs, streamlined session/context UX)
-
-### **Pillar 3: SDK Level Features (Core Functionality & API)**
-*4 commits enhancing reliability, security, and SDK capabilities*
-
-- **42ce88a03** - Exponential backoff fix (improved retry logic)
-- **d76d0fca4** - Backoff timeout configuration (60-second max)
-- **b72735c6f** - PKCE authentication implementation (OAuth 2.0 with 139-line login module)
-- **0e60f6660** - Complete Python SDK (229 files, 22,322 insertions, co-authored with Aiden Cline)
-
-### **Pillar 4: Experiment and Reporting (Metrics & Analytics)**
-*1 commit establishing foundation for experimentation tracking*
-
-- **bde924a60** - Metrics display implementation (request usage tracking, foundation for future analytics)
 
 ---
 
