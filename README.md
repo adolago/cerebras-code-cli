@@ -1,82 +1,10 @@
-<p align="center">
-  <a href="https://opencode.ai">
-    <picture>
-      <source srcset="packages/console/app/src/asset/logo-ornate-dark.svg" media="(prefers-color-scheme: dark)">
-      <source srcset="packages/console/app/src/asset/logo-ornate-light.svg" media="(prefers-color-scheme: light)">
-      <img src="packages/console/app/src/asset/logo-ornate-light.svg" alt="OpenCode logo">
-    </picture>
-  </a>
-</p>
-<p align="center">The AI coding agent built for the terminal.</p>
-<p align="center">
-  <a href="https://opencode.ai/discord"><img alt="Discord" src="https://img.shields.io/discord/1391832426048651334?style=flat-square&label=discord" /></a>
-  <a href="https://www.npmjs.com/package/opencode-ai"><img alt="npm" src="https://img.shields.io/npm/v/opencode-ai?style=flat-square" /></a>
-  <a href="https://github.com/sst/opencode/actions/workflows/publish.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/sst/opencode/publish.yml?style=flat-square&branch=dev" /></a>
-</p>
+# Cerebras Code CLI - Development Changelog
 
-[![OpenCode Terminal UI](packages/web/src/assets/lander/screenshot.png)](https://opencode.ai)
+## Project Overview
 
----
+This is a fork of OpenCode, customized and optimized specifically for Cerebras AI infrastructure. The project has been transformed from a multi-provider AI coding agent into a Cerebras-exclusive terminal-based development tool.
 
-### Installation
-
-```bash
-# YOLO
-curl -fsSL https://opencode.ai/install | bash
-
-# Package managers
-npm i -g opencode-ai@latest        # or bun/pnpm/yarn
-scoop bucket add extras; scoop install extras/opencode  # Windows
-choco install opencode             # Windows
-brew install opencode              # macOS and Linux
-paru -S opencode-bin               # Arch Linux
-mise use --pin -g ubi:sst/opencode # Any OS
-nix run nixpkgs#opencode           # or github:sst/opencode for latest dev branch
-```
-
-> [!TIP]
-> Remove versions older than 0.1.x before installing.
-
-#### Installation Directory
-
-The install script respects the following priority order for the installation path:
-
-1. `$OPENCODE_INSTALL_DIR` - Custom installation directory
-2. `$XDG_BIN_DIR` - XDG Base Directory Specification compliant path
-3. `$HOME/bin` - Standard user binary directory (if exists or can be created)
-4. `$HOME/.opencode/bin` - Default fallback
-
-```bash
-# Examples
-OPENCODE_INSTALL_DIR=/usr/local/bin curl -fsSL https://opencode.ai/install | bash
-XDG_BIN_DIR=$HOME/.local/bin curl -fsSL https://opencode.ai/install | bash
-```
-
-### Agents
-
-OpenCode includes two built-in agents you can switch between,
-you can switch between these using the `Tab` key.
-
-- **build** - Default, full access agent for development work
-- **plan** - Read-only agent for analysis and code exploration
-  - Denies file edits by default
-  - Asks permission before running bash commands
-  - Ideal for exploring unfamiliar codebases or planning changes
-
-Also, included is a **general** subagent for complex searches and multi-step tasks.
-This is used internally and can be invoked using `@general` in messages.
-
-Learn more about [agents](https://opencode.ai/docs/agents).
-
-### Documentation
-
-For more info on how to configure OpenCode [**head over to our docs**](https://opencode.ai/docs).
-
-### Contributing
-
-If you're interested in contributing to OpenCode, please read our [contributing docs](./CONTRIBUTING.md) before submitting a pull request.
-
-### Collaborators
+## Collaborators
 
 This project is maintained by:
 - Kevin
@@ -84,26 +12,276 @@ This project is maintained by:
 - Daniel
 - Arihant
 
-### Building on OpenCode
+---
 
-If you are working on a project that's related to OpenCode and is using "opencode" as a part of its name; for example, "opencode-dashboard" or "opencode-mobile", please add a note to your README to clarify that it is not built by the OpenCode team and is not affiliated with us in anyway.
+## Detailed Work Completed Before December 15, 2025
 
-### FAQ
+### **December 9, 2025**
 
-#### How is this different than Claude Code?
+#### Exponential Backoff Fix (Commit: 42ce88a03)
+**Files Modified:**
+- `packages/opencode/src/session/processor.ts`
+- `packages/opencode/src/session/retry.ts`
 
-It's very similar to Claude Code in terms of capability. Here are the key differences:
+**Changes:**
+- Fixed exponential backoff algorithm to properly handle API request retries
+- Improved retry logic to prevent overwhelming the Cerebras API during rate limiting or service interruptions
+- Enhanced error recovery mechanisms in the session processor
+- Modified retry timing calculations to follow industry-standard exponential backoff patterns
+- Total changes: 26 insertions, 18 deletions across 2 files
 
-- 100% open source
-- Not coupled to any provider. Although we recommend the models we provide through [OpenCode Zen](https://opencode.ai/zen); OpenCode can be used with Claude, OpenAI, Google or even local models. As models evolve the gaps between them will close and pricing will drop so being provider-agnostic is important.
-- Out of the box LSP support
-- A focus on TUI. OpenCode is built by neovim users and the creators of [terminal.shop](https://terminal.shop); we are going to push the limits of what's possible in the terminal.
-- A client/server architecture. This for example can allow OpenCode to run on your computer, while you can drive it remotely from a mobile app. Meaning that the TUI frontend is just one of the possible clients.
+**Impact:** This change significantly improves the stability and reliability of the CLI when dealing with network issues or API rate limits, ensuring a smoother user experience during high-load scenarios.
 
-#### What's the other repo?
+#### Backoff Timeout Configuration (Commit: d76d0fca4)
+**Files Modified:**
+- `packages/opencode/src/session/processor.ts`
+- `packages/opencode/src/session/retry.ts`
 
-The other confusingly named repo has no relation to this one. You can [read the story behind it here](https://x.com/thdxr/status/1933561254481666466).
+**Changes:**
+- Set maximum backoff timeout to 60 seconds for retry operations
+- Adjusted retry intervals to balance between rapid recovery and API rate limit compliance
+- Fine-tuned timeout parameters to optimize for Cerebras API response patterns
+- Total changes: 9 insertions, 7 deletions across 2 files
+
+**Impact:** Prevents indefinite waiting during API failures while maintaining respectful API usage patterns.
 
 ---
 
-**Join our community** [Discord](https://discord.gg/opencode) | [X.com](https://x.com/opencode)
+### **December 8, 2025**
+
+#### UI Enhancement: Request Usage Information (Commit: bde924a60)
+**Files Modified:**
+- `packages/opencode/src/cli/cmd/tui/routes/session/header.tsx`
+- `packages/opencode/src/cli/cmd/tui/routes/session/sidebar.tsx`
+
+**Changes:**
+- Replaced pricing statistics display with request usage information in the TUI
+- Updated header component to show real-time request metrics
+- Modified sidebar to display usage tracking instead of cost calculations
+- Improved user visibility into API consumption patterns
+- Enhanced UX by providing actionable usage data rather than pricing information
+- Total changes: 41 insertions, 20 deletions across 2 files
+
+**Impact:** Users can now better understand their API usage patterns, making it easier to optimize their workflow and manage resource consumption.
+
+#### Major Architecture Change: Cerebras-Only Provider (Commit: b72735c6f)
+**Files Modified:**
+- `packages/opencode/src/cli/cmd/tui/app.tsx`
+- `packages/opencode/src/cli/cmd/tui/component/dialog-model.tsx`
+- `packages/opencode/src/cli/cmd/tui/component/prompt/autocomplete.tsx`
+- `packages/opencode/src/cli/cmd/tui/context/local.tsx`
+- `packages/opencode/src/cli/cmd/tui/routes/session/index.tsx`
+- `packages/opencode/src/provider/cerebras/login.ts` (NEW)
+- `packages/opencode/src/provider/provider.ts`
+- `packages/opencode/src/server/server.ts`
+
+**Changes:**
+- **Complete Provider Refactoring:** Removed multi-provider abstraction layer, making Cerebras the exclusive AI provider
+- **PKCE Authentication Implementation:** Added OAuth 2.0 PKCE (Proof Key for Code Exchange) flow for enhanced security
+  - Created new `login.ts` module with secure authentication handling
+  - Implemented code verifier and challenge generation
+  - Added token management and refresh mechanisms
+- **UI Simplification:** Removed provider selection dialogs and model switching UI elements
+- **Context Optimization:** Streamlined local context management for single-provider architecture
+- **Session Handling:** Updated session management to work exclusively with Cerebras infrastructure
+- **Autocomplete Enhancement:** Modified autocomplete to use Cerebras-specific model capabilities
+- **Server Configuration:** Updated server initialization to use Cerebras endpoints
+- **Code Cleanup:** Removed 1,263 lines of unused provider abstraction code
+- Total changes: 361 insertions, 1,263 deletions across 8 files
+
+**Impact:** This is the most significant architectural change, dramatically simplifying the codebase by removing unnecessary abstraction layers. The PKCE authentication provides enterprise-grade security for API access, and the streamlined architecture improves performance and maintainability.
+
+#### Pre-Push Hook Enhancement (Commit: 1ba691f3f)
+**Files Modified:**
+- `.husky/pre-push`
+
+**Changes:**
+- Enhanced git pre-push hook with additional validation checks
+- Added safeguards to prevent pushing broken code to remote repository
+- Total changes: 6 insertions
+
+**Impact:** Improves code quality by catching issues before they reach the remote repository.
+
+#### Package Version Update (Commit: 0c19e077e)
+**Files Modified:**
+- `package.json`
+
+**Changes:**
+- Updated package version to reflect new Cerebras-specific release
+- Total changes: 1 insertion, 1 deletion
+
+**Impact:** Proper version management for release tracking.
+
+#### Husky Pre-Push Hook Setup (Commit: d68f3099c)
+**Files Modified:**
+- `.husky/pre-push` (NEW)
+
+**Changes:**
+- Created new pre-push git hook using Husky
+- Implemented automated checks before code can be pushed
+- Added build verification and test execution triggers
+- Total changes: 13 insertions
+
+**Impact:** Automated quality control ensuring only tested code reaches the repository.
+
+#### TypeScript Configuration Updates (Commit: 64f74e988)
+**Files Modified:**
+- `packages/opencode/src/types/shims.d.ts`
+- `packages/opencode/tsconfig.json`
+
+**Changes:**
+- Added necessary TypeScript type shims for Cerebras-specific modules
+- Updated TypeScript compiler configuration for improved type checking
+- Enhanced type safety across the codebase
+- Total changes: 5 insertions, 1 deletion across 2 files
+
+**Impact:** Improved developer experience with better IDE support and type safety.
+
+#### Package Rename (Commit: b7e33ea65)
+**Files Modified:**
+- `package.json`
+
+**Changes:**
+- Renamed package to reflect Cerebras-specific branding
+- Updated package metadata for proper npm registry identification
+- Total changes: 1 insertion, 1 deletion
+
+**Impact:** Clear distinction from upstream OpenCode project.
+
+---
+
+### **October 28, 2025**
+
+#### Python SDK Implementation (Commit: 0e60f6660, PR #2779)
+**Co-authored with:** Aiden Cline
+
+**Files Added:** 229 new files
+**Total Changes:** 22,322 insertions, 8 deletions
+
+**Major Components Created:**
+
+1. **CI/CD Pipeline:**
+   - `.github/publish-python-sdk.yml` - Automated publishing workflow for PyPI
+
+2. **Python Package Structure:**
+   - Complete package setup with `pyproject.toml` for modern Python packaging
+   - UV lock file for deterministic dependency management
+   - Proper package metadata and versioning
+
+3. **Documentation System:**
+   - MkDocs-based documentation site (`mkdocs.yml`)
+   - Comprehensive guides:
+     - Installation guide
+     - Quickstart tutorial
+     - Configuration documentation
+     - Files and projects management
+     - Session handling
+     - Streaming API usage
+     - Code generation workflows
+     - Testing procedures
+     - Publishing guidelines
+
+4. **API Client Implementation:**
+   - Full REST API client with async support
+   - 40+ endpoint implementations including:
+     - Agent management (`app_agents.py`)
+     - Command listing (`command_list.py`)
+     - Configuration management (`config_get.py`, `config_providers.py`)
+     - Event subscription system (`event_subscribe.py`)
+     - File operations (`file_status.py`)
+     - Path utilities (`path_get.py`)
+     - Project management (`project_current.py`, `project_list.py`)
+     - Session handling (`session_list.py`)
+     - Tool integration (`tool_ids.py`)
+     - TUI controls (`tui_*.py` modules)
+
+5. **Data Models (150+ Pydantic Models):**
+   - Agent models and configurations
+   - Message types (assistant, user, tool, reasoning)
+   - Session management models
+   - File and project structures
+   - Permission and authentication models
+   - OAuth and API auth models
+   - Error handling models
+   - Event subscription models
+   - Configuration schemas
+   - Model provider definitions
+   - Symbol and code navigation models
+
+6. **Helper Utilities:**
+   - `extras.py` - Enhanced client functionality and utilities
+   - Custom error handling (`errors.py`)
+   - Type definitions (`types.py`)
+   - Client initialization and configuration (`client.py`)
+
+7. **Code Generation Tooling:**
+   - `scripts/generate.py` - OpenAPI-based code generation script
+   - `scripts/publish.py` - Automated publishing workflow
+   - `openapi-python-client.yaml` - Code generation configuration
+
+8. **Example Applications:**
+   - `examples/basic_usage.py` - Getting started guide
+   - `examples/file_status.py` - File monitoring example
+   - `examples/session_list.py` - Session management example
+
+9. **Testing Suite:**
+   - `tests/test_integration.py` - End-to-end integration tests
+   - `tests/test_wrapper.py` - Unit tests for wrapper functionality
+
+10. **Advanced Features:**
+    - Streaming API support with async iterators
+    - Event subscription system for real-time updates
+    - LSP (Language Server Protocol) client integration
+    - MCP (Model Context Protocol) support
+    - File watcher integration
+    - OAuth 2.0 authentication flows
+    - Permission management system
+    - Project and session state management
+    - Tool execution framework
+    - Symbol navigation and code intelligence
+
+**Impact:** This comprehensive Python SDK enables Python developers to integrate Cerebras-powered AI coding capabilities into their workflows, scripts, and applications. It provides both high-level convenience methods and low-level API access for maximum flexibility.
+
+---
+
+## Summary Statistics
+
+### Total Commits by Kevin: 10
+### Time Period: October 28, 2025 - December 9, 2025
+### Files Changed: 237 files
+### Total Additions: ~22,700 lines
+### Total Deletions: ~1,300 lines
+
+### Key Achievements:
+
+1. **Security Enhancement:** Implemented PKCE OAuth authentication
+2. **Architecture Simplification:** Removed multi-provider complexity
+3. **Python Ecosystem Support:** Complete Python SDK with 229 files
+4. **Reliability Improvements:** Fixed retry logic and exponential backoff
+5. **Developer Experience:** Enhanced TypeScript configuration and git hooks
+6. **UI/UX Improvements:** Better usage tracking and information display
+7. **Code Quality:** Automated pre-push validation
+8. **Documentation:** Comprehensive Python SDK documentation
+
+---
+
+## Technical Impact
+
+This work has transformed the project from a generic multi-provider AI coding agent into a streamlined, secure, and highly optimized Cerebras-specific development tool. The changes improve:
+
+- **Performance:** Reduced code complexity and optimized API communication
+- **Security:** Enterprise-grade OAuth 2.0 PKCE authentication
+- **Reliability:** Improved error handling and retry mechanisms
+- **Accessibility:** Python SDK opens the platform to a broader developer audience
+- **Maintainability:** Simplified codebase with single provider focus
+- **Developer Experience:** Better tooling, testing, and automation
+
+---
+
+## Repository Information
+
+- **Original Project:** [OpenCode](https://github.com/sst/opencode)
+- **Fork Purpose:** Cerebras AI optimization
+- **License:** Inherited from OpenCode
+- **Platform:** Terminal-based AI coding agent
+- **Primary Language:** TypeScript/JavaScript, Python (SDK)
