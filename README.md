@@ -34,6 +34,7 @@ This project is maintained by:
 ### **Pillar 2: TUI Features (User Interface & Experience)**
 *Focus: UI/UX improvements, metrics display, user interactions*
 
+- **04d4611a1** - Add prompt cache hit rate tracking to sidebar (real-time cache efficiency with sparkline trend graph)
 - **bde924a60** - Request usage information display (replaced pricing with metrics in header/sidebar)
 - **b72735c6f** - UI simplification (removed provider dialogs, streamlined session/context UX)
 

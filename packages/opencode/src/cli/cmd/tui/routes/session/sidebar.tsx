@@ -57,12 +57,64 @@ export function Sidebar(props: { sessionID: string }) {
     }
   })
 
+  // Cache hit rate tracking
+  const cacheMetrics = createMemo(() => {
+    const assistantMessages = messages().filter((m) => m.role === "assistant" && m.tokens.output > 0) as AssistantMessage[]
+
+    // Calculate current cache hit rate from the last message
+    const last = assistantMessages[assistantMessages.length - 1]
+    const currentHitRate = last?.tokens.input > 0
+      ? ((last.tokens.cache.read / last.tokens.input) * 100)
+      : 0
+
+    // Calculate historical cache hit rates for graphing (last 20 messages)
+    const history = assistantMessages.slice(-20).map((msg, idx) => {
+      const hitRate = msg.tokens.input > 0
+        ? ((msg.tokens.cache.read / msg.tokens.input) * 100)
+        : 0
+      return {
+        index: idx,
+        hitRate: hitRate,
+        cachedTokens: msg.tokens.cache.read,
+        totalInputTokens: msg.tokens.input,
+      }
+    })
+
+    // Calculate average hit rate across all messages
+    const avgHitRate = assistantMessages.length > 0
+      ? assistantMessages.reduce((sum, msg) => {
+          const rate = msg.tokens.input > 0 ? ((msg.tokens.cache.read / msg.tokens.input) * 100) : 0
+          return sum + rate
+        }, 0) / assistantMessages.length
+      : 0
+
+    return {
+      current: currentHitRate,
+      average: avgHitRate,
+      history,
+      lastCached: last?.tokens.cache.read ?? 0,
+      lastTotal: last?.tokens.input ?? 0,
+    }
+  })
+
   const keybind = useKeybind()
   const directory = useDirectory()
 
   const hasProviders = createMemo(() =>
     sync.data.provider.some((x) => x.id !== "opencode" || Object.values(x.models).some((y) => y.cost?.input !== 0)),
   )
+
+  // Generate a sparkline graph for cache hit rates
+  const createSparkline = (history: Array<{ hitRate: number }>) => {
+    if (history.length === 0) return ""
+    const bars = ["▁", "▂", "▃", "▄", "▅", "▆", "▇", "█"]
+    const max = Math.max(...history.map(h => h.hitRate), 1)
+    return history.map(h => {
+      const normalized = h.hitRate / max
+      const index = Math.min(Math.floor(normalized * bars.length), bars.length - 1)
+      return bars[index]
+    }).join("")
+  }
 
   return (
     <Show when={session()}>
@@ -94,6 +146,27 @@ export function Sidebar(props: { sessionID: string }) {
                 Requests: {usage().total} (1m {usage().min1} / 1h {usage().hour1} / 24h {usage().day1})
               </text>
             </box>
+            <Show when={cacheMetrics().lastTotal > 0}>
+              <box>
+                <text fg={theme.text}>
+                  <b>Cache Hit Rate</b>
+                </text>
+                <text fg={theme.textMuted}>
+                  Current: {cacheMetrics().current.toFixed(1)}% ({cacheMetrics().lastCached}/{cacheMetrics().lastTotal} tokens)
+                </text>
+                <text fg={theme.textMuted}>
+                  Average: {cacheMetrics().average.toFixed(1)}%
+                </text>
+                <Show when={cacheMetrics().history.length > 1}>
+                  <text fg={theme.textMuted}>
+                    Trend: <span style={{ fg: theme.success }}>{createSparkline(cacheMetrics().history)}</span>
+                  </text>
+                  <text fg={theme.textMuted} style={{ fontSize: "0.8em" }}>
+                    ← Last {cacheMetrics().history.length} requests
+                  </text>
+                </Show>
+              </box>
+            </Show>
             <Show when={mcpEntries().length > 0}>
               <box>
                 <box
