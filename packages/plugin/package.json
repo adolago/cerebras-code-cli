@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
-  "name": "@cerebras/plugin",
+  "name": "cerebras-plugin",
   "version": "1.0.137",
   "type": "module",
   "scripts": {
