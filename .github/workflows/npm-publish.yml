@@ -57,7 +57,7 @@ jobs:
           bun install
 
           # Publish SDK
-          echo "=== Publishing cerebras-code ==="
+          echo "=== Publishing cerebras-sdk ==="
           cd packages/sdk/js
           ./script/publish.ts
           cd ../../..
@@ -65,6 +65,12 @@ jobs:
           # Publish Plugin
           echo "=== Publishing cerebras-plugin ==="
           cd packages/plugin
+          ./script/publish.ts
+          cd ../..
+
+          # Publish CLI
+          echo "=== Publishing cerebras-code ==="
+          cd packages/opencode
           ./script/publish.ts
           cd ../..
 
