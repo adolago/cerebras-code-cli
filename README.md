@@ -52,6 +52,67 @@ This project is maintained by:
 
 ---
 
+### Major Cache Optimizations
+
+  1. Enable Prompt Caching for Anthropic (commit: 1a553e525, June 16, 2025)
+
+  - Added cacheControl: { type: "ephemeral" } to system prompts for Anthropic models
+  - Initial implementation of prompt caching support
+
+  2. Limit to 4 System Prompts Cached (commit: 63996c418, June 16, 2025)
+
+  - Restricted cache control to only the first 4 system messages
+  - Code change in packages/opencode/src/session/index.ts:478:
+  ...(input.providerID === "anthropic" && index < 4
+    ? { anthropic: { cacheControl: { type: "ephemeral" } } }
+    : {})
+
+  3. Make System Prompt "Less Fast" for Better Caching (commit: 7d174767b, June 15, 2025)
+
+  - Changed SystemPrompt.environment(sessionID) to SystemPrompt.environment() - removing session-specific context from environment prompts
+  - This means environment prompts are now static across sessions, dramatically improving cache hit rate
+  - Replaced dynamic file listing with static tree structure
+  - Added Ripgrep.files() for consistent file enumeration
+
+  4. Huge Optimization for Token Usage (commit: 1684042fb, June 20, 2025)
+
+  - Strategic cache placement: Changed from caching first 4 messages to caching:
+    - First 2 system messages
+    - Last 2 messages in the conversation
+  const system = msgs.filter((msg) => msg.role === "system").slice(0, 2)
+  const final = msgs.filter((msg) => msg.role !== "system").slice(-2)
+  for (const msg of unique([...system, ...final])) {
+    msg.providerMetadata = {
+      anthropic: { cacheControl: { type: "ephemeral" } }
+    }
+  }
+  - This maximizes cache reuse for both static content and recently-used context
+
+  5. Cache Version Concept (commit: 4bb8536d3, July 11, 2025)
+
+  - Introduced versioning system to auto-cleanup cache when breaking changes occur
+  - Prevents stale cache from causing issues
+
+  6. Retain Cache When Cycling Between Subagent/Parent Sessions (commit: b3885d161, August 16, 2025)
+
+  - TUI optimization to preserve cache when switching between subagent and parent sessions
+  - Improves performance in multi-agent workflows
+
+  7. Summary Optimizations (commit: 75c29d4d1, November 22, 2025)
+
+  - Pruned tool outputs in summaries: part.state.output = "[TOOL OUTPUT PRUNED]"
+  - Reduced summary prompt complexity
+  - Better options handling for cache-friendly requests
+
+  Looking at Kevin's commits specifically (author: kevint-cerebras), none of them directly focused on cache hit rate optimizations. Kevin's work focused on:
+  - Exponential backoff fixes
+  - Cerebras-only provider architecture
+  - PKCE authentication
+  - UI enhancements (request usage display)
+  - Package infrastructure
+
+---
+
 ## Detailed Work Completed Before December 15, 2025
 
 ### **December 9, 2025**
