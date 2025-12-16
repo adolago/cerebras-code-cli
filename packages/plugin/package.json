@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
   "name": "cerebras-plugin",
-  "version": "1.0.138",
+  "version": "1.0.139",
   "type": "module",
   "scripts": {
     "typecheck": "tsgo --noEmit",
@@ -15,7 +15,7 @@
     "dist"
   ],
   "dependencies": {
-    "cerebras-sdk": "^1.0.138",
+    "cerebras-code": "^1.0.139",
     "zod": "^4.1.8"
   },
   "devDependencies": {
