@@ -17,6 +17,7 @@ import PROMPT_COMPACTION from "./prompt/compaction.txt"
 import PROMPT_SUMMARIZE from "./prompt/summarize.txt"
 import PROMPT_TITLE from "./prompt/title.txt"
 import PROMPT_CODEX from "./prompt/codex.txt"
+import PROMPT_GLM46 from "./prompt/glm46.txt"
 import type { Provider } from "@/provider/provider"
 
 export namespace SystemPrompt {
@@ -26,6 +27,7 @@ export namespace SystemPrompt {
   }
 
   export function provider(model: Provider.Model) {
+    if (model.api.id.includes("glm-4") || model.api.id.includes("zai-glm")) return [PROMPT_GLM46]
     if (model.api.id.includes("gpt-5")) return [PROMPT_CODEX]
     if (model.api.id.includes("gpt-") || model.api.id.includes("o1") || model.api.id.includes("o3"))
       return [PROMPT_BEAST]
