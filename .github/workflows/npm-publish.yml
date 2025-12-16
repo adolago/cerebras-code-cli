@@ -1,0 +1,82 @@
+name: npm-publish
+run-name: "npm publish ${{ inputs.bump }}"
+
+on:
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "Bump major, minor, or patch"
+        required: true
+        type: choice
+        options:
+          - major
+          - minor
+          - patch
+      version:
+        description: "Override version (optional)"
+        required: false
+        type: string
+
+concurrency: ${{ github.workflow }}-${{ github.ref }}
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-bun
+
+      - name: Setup npm auth
+        run: |
+          echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
+      - name: Publish packages
+        run: |
+          export OPENCODE_BUMP="${{ inputs.bump }}"
+          export OPENCODE_VERSION="${{ inputs.version }}"
+          export OPENCODE_CHANNEL="latest"
+
+          # Get version
+          cd packages/script
+          VERSION=$(bun run -e 'import { Script } from "./src/index.ts"; console.log(Script.version)')
+          cd ../..
+          echo "Publishing version: $VERSION"
+
+          # Update all package.json files
+          find . -name "package.json" -not -path "*/node_modules/*" -not -path "*/dist/*" | while read file; do
+            bun -e "const pkg = await Bun.file('$file').json(); pkg.version = '$VERSION'; await Bun.write('$file', JSON.stringify(pkg, null, 2) + '\n')"
+            echo "Updated: $file"
+          done
+
+          bun install
+
+          # Publish SDK
+          echo "=== Publishing @cerebras/sdk ==="
+          cd packages/sdk/js
+          ./script/publish.ts
+          cd ../../..
+
+          # Publish Plugin
+          echo "=== Publishing @cerebras/plugin ==="
+          cd packages/plugin
+          ./script/publish.ts
+          cd ../..
+
+          # Commit and tag
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"
+          git add .
+          git commit -m "release: v$VERSION" || echo "No changes to commit"
+          git tag "v$VERSION"
+          git push origin HEAD --tags --no-verify
+
+          # Create GitHub Release
+          gh release create "v$VERSION" --title "v$VERSION" --notes "Release v$VERSION"
+        env:
+          GH_TOKEN: ${{ github.token }}

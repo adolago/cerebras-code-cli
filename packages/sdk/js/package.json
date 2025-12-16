@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/package.json",
-  "name": "@opencode-ai/sdk",
+  "name": "@cerebras/sdk",
   "version": "1.0.137",
   "type": "module",
   "scripts": {
