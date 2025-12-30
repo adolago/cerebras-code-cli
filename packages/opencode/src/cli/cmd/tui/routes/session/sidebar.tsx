@@ -13,7 +13,107 @@ import { useDirectory } from "../../context/directory"
 
 // Threshold for low cache hit rate warning
 const LOW_CACHE_HIT_THRESHOLD = 40
+const HIGH_CACHE_HIT_THRESHOLD = 70
 const CONSECUTIVE_LOW_COUNT = 3
+
+// Streak detection types
+type StreakType = "good" | "ok" | "bad" | "none"
+
+interface StreakInfo {
+  type: StreakType
+  count: number
+  rates: number[]
+}
+
+// Classify a single rate
+function classifyRate(rate: number): StreakType {
+  if (rate >= HIGH_CACHE_HIT_THRESHOLD) return "good"
+  if (rate >= LOW_CACHE_HIT_THRESHOLD) return "ok"
+  return "bad"
+}
+
+// Detect current streak from the end of rates array
+function detectCurrentStreak(rates: number[]): StreakInfo {
+  if (rates.length === 0) {
+    return { type: "none", count: 0, rates: [] }
+  }
+
+  const lastType = classifyRate(rates[rates.length - 1])
+  let count = 0
+  const streakRates: number[] = []
+
+  // Count backwards from the end
+  for (let i = rates.length - 1; i >= 0; i--) {
+    if (classifyRate(rates[i]) === lastType) {
+      count++
+      streakRates.unshift(rates[i])
+    } else {
+      break
+    }
+  }
+
+  return { type: lastType, count, rates: streakRates }
+}
+
+// Detect all streaks in the rates array
+function detectAllStreaks(rates: number[]): StreakInfo[] {
+  if (rates.length === 0) return []
+
+  const streaks: StreakInfo[] = []
+  let currentType = classifyRate(rates[0])
+  let currentRates: number[] = [rates[0]]
+
+  for (let i = 1; i < rates.length; i++) {
+    const type = classifyRate(rates[i])
+    if (type === currentType) {
+      currentRates.push(rates[i])
+    } else {
+      streaks.push({ type: currentType, count: currentRates.length, rates: currentRates })
+      currentType = type
+      currentRates = [rates[i]]
+    }
+  }
+
+  // Push the last streak
+  streaks.push({ type: currentType, count: currentRates.length, rates: currentRates })
+
+  return streaks
+}
+
+// Get longest streak of a specific type
+function getLongestStreak(rates: number[], type: StreakType): StreakInfo {
+  const allStreaks = detectAllStreaks(rates)
+  const matchingStreaks = allStreaks.filter(s => s.type === type)
+  
+  if (matchingStreaks.length === 0) {
+    return { type, count: 0, rates: [] }
+  }
+
+  return matchingStreaks.reduce((longest, current) => 
+    current.count > longest.count ? current : longest
+  )
+}
+
+// Check if currently in a concerning streak (bad or ok for too long)
+function isInConcerningStreak(rates: number[], threshold: number = 3): boolean {
+  const current = detectCurrentStreak(rates)
+  return (current.type === "bad" || current.type === "ok") && current.count >= threshold
+}
+
+// Get streak statistics
+function getStreakStats(rates: number[]) {
+  const allStreaks = detectAllStreaks(rates)
+  const current = detectCurrentStreak(rates)
+  
+  return {
+    current,
+    totalStreaks: allStreaks.length,
+    longestGood: getLongestStreak(rates, "good"),
+    longestBad: getLongestStreak(rates, "bad"),
+    goodStreakCount: allStreaks.filter(s => s.type === "good").length,
+    badStreakCount: allStreaks.filter(s => s.type === "bad").length,
+  }
+}
 
 // Visual representation of cache hit rate
 function CacheVisual(props: { hitRate: number; cachedTokens: number; promptTokens: number }) {
