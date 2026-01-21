@@ -1,0 +1,28 @@
+# Only publish the launcher script
+# The actual binary comes from platform-specific packages
+
+# Ignore source code
+src/
+test/
+script/
+
+# Ignore build artifacts
+dist/
+*.tsbuildinfo
+
+# Ignore dev files
+*.ts
+!*.d.ts
+bunfig.toml
+tsconfig.json
+Dockerfile
+parsers-config.ts
+AGENTS.md
+
+sst-env.d.ts
+
+# Keep
+# bin/opencode.cjs
+# package.json
+# README.md
+

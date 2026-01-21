@@ -118,7 +118,7 @@ for (const item of targets) {
       autoloadBunfig: false,
       autoloadDotenv: false,
       target: name.replace(pkg.name, "bun") as any,
-      outfile: `dist/${name}/bin/opencode`,
+      outfile: `dist/${name}/bin/cerebras-cli`,
       execArgv: [`--user-agent=opencode/${Script.version}`, "--"],
       windows: {},
     },

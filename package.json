@@ -68,8 +68,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/sst/opencode"
+    "url": "git+https://github.com/kevint-cerebras/cerebras-code-cli.git"
   },
+  "bugs": {
+    "url": "https://github.com/kevint-cerebras/cerebras-code-cli/issues"
+  },
+  "homepage": "https://github.com/kevint-cerebras/cerebras-code-cli#readme",
   "license": "MIT",
   "prettier": {
     "semi": false,
