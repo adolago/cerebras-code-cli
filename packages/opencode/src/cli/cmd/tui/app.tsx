@@ -45,6 +45,7 @@ import { cerebrasLogin } from "@/provider/cerebras/login"
 import { Notification } from "@/notification"
 import { FullscreenNotification } from "@tui/component/dialog-notification"
 import { NotificationBanner } from "@tui/component/notification-banner"
+import { GoldenTicketAnimation } from "@tui/component/golden-ticket"
 
 async function getTerminalBackgroundColor(): Promise<"dark" | "light"> {
   // can't set raw mode if not a TTY
@@ -178,6 +179,16 @@ function App() {
   const promptRef = usePromptRef()
   const [bannerNotification, setBannerNotification] = createSignal<import("@/notification").Notification | null>(null)
   const [fullscreenNotification, setFullscreenNotification] = createSignal<import("@/notification").Notification | null>(null)
+  const [showGoldenTicket, setShowGoldenTicket] = createSignal(false)
+
+  // Show golden ticket on first ever use
+  createEffect(() => {
+    if (!kv.ready) return
+    const hasSeenGoldenTicket = kv.get("hasSeenGoldenTicket", false)
+    if (!hasSeenGoldenTicket) {
+      setShowGoldenTicket(true)
+    }
+  })
 
   createEffect(() => {
     console.log(JSON.stringify(route.data))
@@ -269,6 +280,16 @@ function App() {
 
   const connected = useConnected()
   command.register(() => [
+    {
+      title: "Golden Ticket (test)",
+      value: "test.golden_ticket",
+      category: "Debug",
+      disabled: true, // Hidden from command palette, use for testing
+      onSelect: () => {
+        dialog.clear()
+        setShowGoldenTicket(true)
+      },
+    },
     {
       title: "Switch session",
       value: "session.list",
@@ -615,6 +636,13 @@ function App() {
     }
   })
 
+  // Test golden ticket animation with Ctrl+Shift+G
+  useKeyboard((evt) => {
+    if (evt.name === "G" && evt.ctrl && evt.shift) {
+      setShowGoldenTicket(true)
+    }
+  })
+
   return (
     <box
       width={dimensions().width}
@@ -639,16 +667,24 @@ function App() {
         }
       }}
     >
+      <Show when={showGoldenTicket()}>
+        <GoldenTicketAnimation onClose={() => {
+          kv.set("hasSeenGoldenTicket", true)
+          setShowGoldenTicket(false)
+        }} />
+      </Show>
       <Show
-        when={!fullscreenNotification()}
+        when={!fullscreenNotification() && !showGoldenTicket()}
         fallback={
-          <FullscreenNotification
-            notification={fullscreenNotification()!}
-            onClose={() => {
-              Notification.markSeen(fullscreenNotification()!.id)
-              setFullscreenNotification(null)
-            }}
-          />
+          <Show when={fullscreenNotification()}>
+            <FullscreenNotification
+              notification={fullscreenNotification()!}
+              onClose={() => {
+                Notification.markSeen(fullscreenNotification()!.id)
+                setFullscreenNotification(null)
+              }}
+            />
+          </Show>
         }
       >
         <Show when={bannerNotification()}>
