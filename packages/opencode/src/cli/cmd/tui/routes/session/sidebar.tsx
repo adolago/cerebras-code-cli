@@ -283,10 +283,7 @@ export function Sidebar(props: { sessionID: string }) {
   const rateLimitInfo = createMemo(() => {
     const currentModel = local.model.current()
     if (!currentModel?.providerID) return undefined
-    // Access the ratelimit object to subscribe to it, then access the specific provider
-    // This ensures the memo re-runs when rate limit data updates
-    const allRateLimits = sync.data.ratelimit
-    return allRateLimits[currentModel.providerID]
+    return sync.data.ratelimit[currentModel.providerID]
   })
 
   // Determine API key tier based on rate limits
