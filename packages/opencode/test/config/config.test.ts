@@ -393,7 +393,11 @@ test("resolves scoped npm plugins in config", async () => {
       const pluginEntries = config.plugin ?? []
 
       const baseUrl = pathToFileURL(path.join(tmp.path, "opencode.json")).href
-      const expected = import.meta.resolve("@scope/plugin", baseUrl)
+      if (!import.meta.resolve) {
+        throw new Error("import.meta.resolve is not available")
+      }
+      const expected = await import.meta.resolve("@scope/plugin", baseUrl)
+
 
       expect(pluginEntries.includes(expected)).toBe(true)
 
